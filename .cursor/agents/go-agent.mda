@@ -1,0 +1,103 @@
+# go-agent.mda — Project rules and coding standards
+
+This file is the single source of truth for architectural rules, coding standards, and extension guidelines. When changing structure or conventions, update this file.
+
+---
+
+## Architecture
+
+- **Feature-driven**: Each feature lives under `internal/<feature>/`. No cross-feature direct dependencies. No global mutable state.
+- **Per-feature layout**: Each feature must contain:
+  - **config/** — subdirectory with a config struct (loaded from env, attached to root config).
+  - **handler.go** — HTTP handlers. For features with business logic, accept a **service layer** (interface) and delegate to it; for simple features (e.g. health), handlers may respond directly.
+  - **service.go** — (optional) Service interface and implementation for use-case / business logic. Use when the feature has non-trivial logic; omit for trivial endpoints (e.g. health check).
+  - **routes.go** — route registration (e.g. `Register(router, handler, config)`); no business logic.
+  - **models.go** — shared data structs for the feature (response DTOs, domain types). Put all response/domain structs here.
+  - **response.go** — HTTP response helpers only (e.g. `JSONSuccess`, `JSONError`, factory helpers like `OKResponse()`). No struct definitions; structs live in models.go.
+- **Service layer**: Optional. Use a service (interface) when the feature has business logic; keep handlers thin (parse request, call service, write response). Simple features (e.g. health) need no service.
+- **Root config**: `internal/config/config.go` holds the root `Config` struct (server settings + each feature’s config), the **Logger** interface, and `Load()` from env. No global config instance.
+
+---
+
+## Coding standards
+
+- **Logging**: Do **not** use `fmt.Println`, `log.Println`, or any stdlib printing/logging. Use only the **Logger** interface from `internal/config`; inject it via constructors or function arguments.
+- **No panic**: Do not use `panic`. Handle errors by returning them or logging and exiting (e.g. write to `os.Stderr` and `os.Exit(1)` in `main`).
+- **Naming**: Explicit structs, clear names, small well-defined files. No hidden magic; dependency-injection friendly.
+- **Handlers**: Handlers receive at least the logger. If the feature has a service layer, handlers also receive the service and delegate to it; otherwise they use response helpers directly to send JSON.
+
+---
+
+## Dependencies
+
+- **Allowed**: `github.com/gin-gonic/gin`, `github.com/joho/godotenv`, `github.com/google/uuid`, `github.com/swaggo/gin-swagger`, `github.com/swaggo/files`, `github.com/swaggo/swag`.
+- No other logging/printing libraries. Use only the project’s Logger interface and its implementation.
+
+---
+
+## Configuration
+
+- All configuration from **environment variables** only. No hardcoded ports, hosts, or feature flags.
+- Use **godotenv** to load `.env` at startup (before reading config). Optional: `ENV_PATH` to point to a specific env file.
+- Global config in `internal/config/config.go`. Each feature has `internal/<feature>/config/` and a config struct; that struct is a field on the root `Config`. Load all config in `config.Load()`.
+
+---
+
+## UUID
+
+- Use **only** `github.com/google/uuid` for UUID generation.
+
+---
+
+## HTTP framework
+
+- Use **gin** as the HTTP framework. No other HTTP or router framework.
+
+---
+
+## Extension rules (adding a new feature)
+
+1. Create `internal/<feature>/`.
+2. Add **config/config.go** with a config struct; in `internal/config/config.go` add a field for it and load it in `Load()`.
+3. Add **models.go** with response/domain structs (e.g. response DTOs).
+4. Add **response.go** with JSON helpers and any factory helpers (e.g. `OKResponse()`) that return types from models.go.
+5. (Optional) Add **service.go** with a `Service` interface and implementation when the feature has business logic; otherwise omit.
+6. Add **handler.go** with a handler that accepts the logger (and the feature’s Service if you added one); use response helpers to send JSON.
+7. Add **routes.go** with `Register(router, handler, config)` mounting the feature’s routes.
+8. In **cmd/server/main.go**: load feature config from root config, create service (if any), create handler (with logger and optional service), call `feature.Register(router, handler, cfg.Feature)`.
+9. Document any new env vars in `.example.env` and in the feature’s config loader.
+
+---
+
+## Models and response files
+
+- **models.go**: All shared structs for the feature (response bodies, DTOs, domain types). One place for “data shapes.”
+- **response.go**: Only functions (e.g. `JSONSuccess`, `JSONError`, `OKResponse()`). No struct definitions; they belong in models.go.
+
+---
+
+## AI modification guidelines
+
+- Preserve the feature-driven structure. Use a service layer when a feature has business logic; keep features isolated.
+- Do not introduce stdlib logging or printing. Keep using the Logger interface.
+- When changing architectural or dependency rules, update this file (go-agent.mda) accordingly.
+
+---
+
+## Environment variables
+
+- All configuration via env. Document every variable in `.example.env` and in the corresponding config struct. Group by module. Use reserved placeholders for future features where appropriate.
+
+---
+
+## Future modules
+
+- Any new feature **must** include a **config** subdirectory and config struct; its config is loaded at startup and attached to the root config.
+- Follow the same layout: config, models, response, (service if needed), handler, routes.
+
+---
+
+## Explicit placeholders
+
+- **Dockerfile**: Implementation will be provided in a later prompt. The repo contains a placeholder only.
+- **Logger**: Implemented (interface in `internal/config`; e.g. NoopLogger). Use the provided logger everywhere; do not use stdlib log or fmt for logging.

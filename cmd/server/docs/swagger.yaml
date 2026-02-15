@@ -1,0 +1,37 @@
+basePath: /
+definitions:
+  go-service-template_internal_models.Response:
+    properties:
+      status:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
+info:
+  contact:
+    name: API Support
+    url: https://github.com/go-service-template
+  description: Production-ready feature-driven REST API template.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Go Service Template API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      description: Returns service health status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/go-service-template_internal_models.Response'
+      summary: Health check
+      tags:
+      - health
+swagger: "2.0"
