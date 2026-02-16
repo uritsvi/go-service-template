@@ -10,6 +10,8 @@ grep -rl 'go-service-template' --include='*.go' --include='go.mod' --include='*.
 
 Then run `go mod tidy`. Optionally rename the repository directory to match.
 
+**Clone and run without committing:** You can use this template without creating a new repo or committing. Clone the repository, copy `.example.env` to `.env`, set `SERVER_PORT`, run `go mod tidy` and `go run ./cmd/server`. The project runs as-is with no git push or new remote. Use it to try the template locally or as a starting point; when you’re ready, rename the project (see above) and optionally init a new git repo or add your own remote.
+
 ## Overview
 
 This template provides a minimal but complete REST server with:
@@ -46,21 +48,17 @@ The template includes the **health route feature** as the example. Add new featu
 ## Configuration
 
 - Configuration is **env-only**. No hardcoded ports or hosts.
-- **godotenv** loads a `.env` file at startup (optional; can override with `ENV_PATH`).
+- **godotenv** loads a `.env` file at startup.
 - Copy `.example.env` to `.env` and set values. Variables are grouped by module (server, health, reserved for future features).
 
 Required for running the server:
 
-- `SERVER_PORT` or `PORT`: Port the server listens on (e.g. `8080`).
+- `SERVER_PORT`: Port the server listens on (e.g. `8080`).
 
-Optional:
-
-- `ENV_PATH`: Path to `.env` (if not default).
-- `HEALTH_BASE_PATH`: Base path for health routes (default `/health`).
 
 ## Run locally
 
-1. Copy `.example.env` to `.env` and set at least `SERVER_PORT` (or `PORT`).
+1. Copy `.example.env` to `.env` and set `SERVER_PORT`.
 2. Install dependencies: `go mod tidy`.
 3. Generate Swagger docs (see below), then run:
 
@@ -84,7 +82,7 @@ docker run -p 8080:8080 --env-file .env go-service-template
 From the project root:
 
 ```bash
-swag init -g cmd/server/main.go --parseDependency --parseInternal -o cmd/server/docs
+swag init -g cmd/server/main.go --parseDependency --parseInternal -o docs
 ```
 
 Install the swag CLI if needed:

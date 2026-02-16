@@ -8,7 +8,7 @@ bin/
 *.out
 
 # Swagger-generated docs (tracked so project builds without running swag init; uncomment to ignore)
-# cmd/server/docs/
+# docs/
 
 # IDE
 .idea/

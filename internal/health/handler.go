@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"go-service-template/internal/models"
+	"go-service-template/internal/response"
 )
 
 var _ = models.Response{} // used by swag @Success annotation
@@ -13,8 +14,8 @@ var _ = models.Response{} // used by swag @Success annotation
 // Handler handles health endpoints.
 type Handler struct{}
 
-// NewHandler creates a new health handler.
-func NewHandler() *Handler {
+// New creates a new health handler.
+func New() *Handler {
 	return &Handler{}
 }
 
@@ -27,5 +28,5 @@ func NewHandler() *Handler {
 // @Success      200  {object}  models.Response
 // @Router       /health [get]
 func (h *Handler) Get(c *gin.Context) {
-	JSONSuccess(c, http.StatusOK, OKResponse())
+	response.JSONSuccess(c, http.StatusOK, OKResponse())
 }

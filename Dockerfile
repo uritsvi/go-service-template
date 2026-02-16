@@ -28,7 +28,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app/server .
 
 ENV GIN_MODE=release
-ENV PORT=8080
+ENV SERVER_PORT=8080
 ENV SERVICE_NAME=go-service-template
 
 RUN addgroup -g 1001 -S appgroup && \
